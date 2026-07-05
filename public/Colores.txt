@@ -1,0 +1,11 @@
+Colores Principales (Marca)
+Naranja Rappi (Principal): #FF4940
+Naranja Rappi (Variante UI): #FE3F23
+Verde Rappi (Secundario/Prime): #0EC665
+
+
+
+Colores de Interfaz (Textos y Fondos)
+Negro (Textos principales): #111111
+Blanco (Fondos y Bigote): #FFFFFF
+Gris Claro (Bordes y Separadores): #F2F2F2
