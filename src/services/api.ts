@@ -1,12 +1,17 @@
 import axios from 'axios'
 
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
+export const awsApi = axios.create({
+  baseURL: import.meta.env.VITE_AWS_BASE_URL,
 })
 
-if (import.meta.env.VITE_ENABLE_MOCKS === 'true') {
-  const { buildMockAdapter } = await import('../mocks/adapter')
-  api.defaults.adapter = buildMockAdapter()
-}
+export const gcpApi = axios.create({
+  baseURL: import.meta.env.VITE_GCP_ORDER_API,
+})
 
-export default api
+gcpApi.interceptors.request.use((config) => {
+  const t = localStorage.getItem('rappi-token')
+  if (t) {
+    config.headers.Authorization = 'Bearer ' + t
+  }
+  return config
+})

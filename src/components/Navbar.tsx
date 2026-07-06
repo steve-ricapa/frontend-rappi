@@ -4,14 +4,15 @@ import { useUser } from '../context/UserContext'
 
 function useBackPath(pathname: string): string | null {
   if (pathname.startsWith('/orders/')) return '/orders'
-  if (pathname === '/orders') return '/catalog'
-  if (pathname === '/catalog') return '/restaurants'
+  if (pathname === '/orders') return '/restaurants'
+  if (pathname === '/catalog') return '/stores'
+  if (pathname === '/stores') return '/restaurants'
   if (pathname === '/restaurants') return '/'
   return null
 }
 
 export default function Navbar() {
-  const { user, clearUser } = useUser()
+  const { user, logout } = useUser()
   const location = useLocation()
   const navigate = useNavigate()
   const backPath = useBackPath(location.pathname)
@@ -31,7 +32,7 @@ export default function Navbar() {
 
   const handleChangeUser = () => {
     setDropdownOpen(false)
-    clearUser()
+    logout()
     navigate('/')
   }
 
@@ -54,7 +55,6 @@ export default function Navbar() {
               </svg>
             </Link>
           )}
-
           <Link to="/" className="h-8">
             <img src="/LogoRappi.webp" alt="Rappi" className="h-full" />
           </Link>
@@ -94,7 +94,7 @@ export default function Navbar() {
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1 animate-scale-in origin-top-right">
                   <div className="px-4 py-2 border-b border-gray-50">
                     <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                    <p className="text-xs text-gray-400">{user.phone}</p>
+                    <p className="text-xs text-gray-400">{user.email}</p>
                   </div>
                   <button
                     onClick={handleMyOrders}

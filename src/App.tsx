@@ -6,6 +6,7 @@ import ToastContainer from './components/Toast'
 import MainLayout from './layouts/MainLayout'
 import UserSelectPage from './pages/UserSelectPage'
 import RestaurantSelectPage from './pages/RestaurantSelectPage'
+import StoreSelectPage from './pages/StoreSelectPage'
 import CatalogPage from './pages/CatalogPage'
 import OrdersPage from './pages/OrdersPage'
 import OrderTrackingPage from './pages/OrderTrackingPage'
@@ -21,6 +22,7 @@ export default function App() {
               <Route path="/" element={<UserSelectPage />} />
               <Route element={<MainLayout />}>
                 <Route path="/restaurants" element={<RestaurantSelectPage />} />
+                <Route path="/stores" element={<StoreSelectPage />} />
                 <Route path="/catalog" element={<CatalogPage />} />
                 <Route path="/orders" element={<OrdersPage />} />
                 <Route path="/orders/:id" element={<OrderTrackingPage />} />

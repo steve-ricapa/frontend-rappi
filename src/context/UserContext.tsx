@@ -1,21 +1,84 @@
-import { createContext, useContext, useState, type ReactNode } from 'react'
-import type { User } from '../types'
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
+import { login as apiLogin, register as apiRegister } from '../services/users.service'
+
+interface UserData {
+  email: string
+  name: string
+}
 
 interface UserContextType {
-  user: User | null
-  setUser: (user: User | null) => void
-  clearUser: () => void
+  user: UserData | null
+  token: string | null
+  login: (email: string, password: string) => Promise<void>
+  register: (name: string, email: string, password: string) => Promise<void>
+  logout: () => void
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined)
 
-export function UserProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
+function loadToken(): string | null {
+  try {
+    return localStorage.getItem('rappi-token')
+  } catch {
+    return null
+  }
+}
 
-  const clearUser = () => setUser(null)
+function loadUser(): UserData | null {
+  try {
+    const raw = localStorage.getItem('rappi-user')
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+
+function saveAuth(token: string, user: UserData) {
+  localStorage.setItem('rappi-token', token)
+  localStorage.setItem('rappi-user', JSON.stringify(user))
+}
+
+function clearAuth() {
+  localStorage.removeItem('rappi-token')
+  localStorage.removeItem('rappi-user')
+}
+
+export function UserProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<UserData | null>(loadUser)
+  const [token, setToken] = useState<string | null>(loadToken)
+
+  useEffect(() => {
+    if (token) {
+      localStorage.setItem('rappi-token', token)
+    } else {
+      localStorage.removeItem('rappi-token')
+    }
+  }, [token])
+
+  const login = async (email: string, password: string) => {
+    const data = await apiLogin(email, password)
+    const u: UserData = { email: data.email, name: data.name }
+    saveAuth(data.token, u)
+    setToken(data.token)
+    setUser(u)
+  }
+
+  const register = async (name: string, email: string, password: string) => {
+    const data = await apiRegister(name, email, password)
+    const u: UserData = { email: data.email, name: data.name }
+    saveAuth(data.token, u)
+    setToken(data.token)
+    setUser(u)
+  }
+
+  const logout = () => {
+    clearAuth()
+    setToken(null)
+    setUser(null)
+  }
 
   return (
-    <UserContext.Provider value={{ user, setUser, clearUser }}>
+    <UserContext.Provider value={{ user, token, login, register, logout }}>
       {children}
     </UserContext.Provider>
   )

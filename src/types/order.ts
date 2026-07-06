@@ -1,33 +1,22 @@
-export type OrderStatus =
-  | "RECEIVED"
-  | "COOKING"
-  | "PACKING"
-  | "ON_THE_WAY"
-  | "DELIVERED"
-
-export interface OrderItem {
-  productId: string
-  quantity: number
-}
-
-export interface CreateOrderPayload {
-  userId: string
-  items: OrderItem[]
-}
-
-export interface Order {
-  orderId: string
-  userId: string
-  status: OrderStatus
-  items: OrderItem[]
-  createdAt: string
-  updatedAt: string
-  stages?: OrderStage[]
-}
+export type OrderStatus = string
 
 export interface OrderStage {
   name: string
   startTime: string | null
   endTime: string | null
   assignedTo: string | null
+}
+
+export interface Order {
+  externalOrderId: string
+  awsOrderId?: string
+  tenantId?: string
+  customerName?: string
+  status: string
+  items?: { productId: string; name: string; price: number; quantity: number }[]
+  total?: number
+  createdAt: string
+  updatedAt: string
+  statusHistory?: { status: string; timestamp: string; source: string }[]
+  stages?: OrderStage[]
 }

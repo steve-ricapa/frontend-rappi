@@ -1,7 +1,11 @@
-import api from './api'
-import type { Product } from '../types'
+import { awsApi } from './api'
 
-export async function getCatalog(): Promise<Product[]> {
-  const { data } = await api.get<Product[]>('/catalog')
-  return data
+export async function getStores() {
+  const { data } = await awsApi.get('/stores')
+  return data.data || []
+}
+
+export async function getProducts(tenantId: string) {
+  const { data } = await awsApi.get('/products', { params: { tenantId } })
+  return data.data || []
 }

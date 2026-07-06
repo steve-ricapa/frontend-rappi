@@ -1,10 +1,8 @@
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../context/ToastContext'
 import AnimatedPage from '../components/AnimatedPage'
-import type { Restaurant } from '../types'
 
-const RESTAURANTS: Restaurant[] = [
+const RESTAURANTS = [
   {
     id: 'mr-sushi',
     name: 'Mr Sushi',
@@ -45,15 +43,13 @@ const RESTAURANTS: Restaurant[] = [
 export default function RestaurantSelectPage() {
   const navigate = useNavigate()
   const { showToast } = useToast()
-  const [selectedId, setSelectedId] = useState<string | null>(null)
 
-  const handleClick = (r: Restaurant) => {
+  const handleClick = (r: typeof RESTAURANTS[0]) => {
     if (!r.available) {
       showToast(`${r.name} no está disponible por el momento`, 'info')
       return
     }
-    setSelectedId(r.id)
-    setTimeout(() => navigate(`/catalog?restaurant=${r.id}`), 200)
+    navigate('/stores')
   }
 
   return (
@@ -72,27 +68,15 @@ export default function RestaurantSelectPage() {
               key={r.id}
               onClick={() => handleClick(r)}
               className={`relative group rounded-2xl overflow-hidden text-left transition-all duration-200 animate-slide-up ${
-                !r.available
-                  ? 'cursor-pointer'
-                  : 'hover:shadow-lg hover:-translate-y-1'
-              } ${
-                selectedId === r.id ? 'ring-2 ring-rappi scale-[1.02]' : 'shadow-sm'
+                r.available ? 'hover:shadow-lg hover:-translate-y-1' : ''
               }`}
               style={{ animationDelay: `${i * 60}ms`, animationFillMode: 'backwards' }}
             >
               <div className="aspect-[4/3] bg-gray-100 flex items-center justify-center">
                 {r.id === 'popeyes' ? (
-                  <img
-                    src={r.imageUrl}
-                    alt={r.name}
-                    className="w-4/5 object-contain transition-transform duration-300 group-hover:scale-105"
-                  />
+                  <img src={r.imageUrl} alt={r.name} className="w-4/5 object-contain transition-transform duration-300 group-hover:scale-105" />
                 ) : (
-                  <img
-                    src={r.imageUrl}
-                    alt={r.name}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
+                  <img src={r.imageUrl} alt={r.name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
                 )}
               </div>
 

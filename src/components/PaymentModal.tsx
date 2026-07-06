@@ -5,53 +5,73 @@ interface PaymentModalProps {
   items: CartItem[]
   total: number
   onClose: () => void
-  onSuccess: () => void
+  onSuccess: (customerName: string, customerPhone: string, deliveryAddress: string) => void
 }
 
-type PaymentState = 'idle' | 'processing' | 'success'
+type Step = 'customer' | 'payment' | 'processing' | 'success'
 
 export default function PaymentModal({ items, total, onClose, onSuccess }: PaymentModalProps) {
-  const [state, setState] = useState<PaymentState>('idle')
+  const [step, setStep] = useState<Step>('customer')
+  const [customerName, setCustomerName] = useState('')
+  const [customerPhone, setCustomerPhone] = useState('')
+  const [deliveryAddress, setDeliveryAddress] = useState('')
+
+  const handleContinue = () => {
+    if (!customerName || !customerPhone || !deliveryAddress) return
+    setStep('payment')
+  }
 
   const handlePay = () => {
-    setState('processing')
+    setStep('processing')
     setTimeout(() => {
-      setState('success')
+      setStep('success')
       setTimeout(() => {
-        onSuccess()
+        onSuccess(customerName, customerPhone, deliveryAddress)
       }, 1200)
     }, 2000)
   }
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50 animate-fade-in" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/50 animate-fade-in" onClick={step === 'customer' ? onClose : undefined} />
 
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md animate-scale-in overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-6 pb-4">
-          <h2 className="text-lg font-semibold text-gray-900">
-            {state === 'success' ? 'Pago exitoso' : 'Pagar pedido'}
-          </h2>
-          {state === 'idle' && (
-            <button onClick={onClose} className="size-8 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center text-sm hover:bg-gray-200 transition-colors">
-              ✕
-            </button>
-          )}
-        </div>
-
-        {state === 'success' ? (
-          <div className="px-6 pb-8 pt-4 flex flex-col items-center gap-4">
-            <div className="size-20 rounded-full bg-green-100 flex items-center justify-center animate-bounce-in">
-              <svg className="size-10 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            </div>
-            <p className="text-green-700 font-medium text-sm">Tu pago fue procesado correctamente</p>
-          </div>
-        ) : (
+        {step === 'customer' && (
           <>
-            {/* Card form */}
+            <div className="flex items-center justify-between px-6 pt-6 pb-4">
+              <h2 className="text-lg font-semibold text-gray-900">Datos del cliente</h2>
+              <button onClick={onClose} className="size-8 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center text-sm hover:bg-gray-200 transition-colors">✕</button>
+            </div>
+            <div className="px-6 pb-6 space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Nombre</label>
+                <input type="text" value={customerName} onChange={e => setCustomerName(e.target.value)} placeholder="Nombre del cliente" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-rappi/30" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Teléfono</label>
+                <input type="text" value={customerPhone} onChange={e => setCustomerPhone(e.target.value)} placeholder="999888777" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-rappi/30" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Dirección de entrega</label>
+                <input type="text" value={deliveryAddress} onChange={e => setDeliveryAddress(e.target.value)} placeholder="Av. Principal 123" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-rappi/30" />
+              </div>
+              <button
+                onClick={handleContinue}
+                disabled={!customerName || !customerPhone || !deliveryAddress}
+                className="w-full py-3 rounded-xl bg-rappi hover:bg-rappi-dark disabled:bg-gray-200 disabled:text-gray-400 text-white font-semibold text-sm transition-colors mt-2"
+              >
+                Continuar al pago
+              </button>
+            </div>
+          </>
+        )}
+
+        {step === 'payment' && (
+          <>
+            <div className="flex items-center justify-between px-6 pt-6 pb-4">
+              <h2 className="text-lg font-semibold text-gray-900">Pagar pedido</h2>
+              <button onClick={() => setStep('customer')} className="size-8 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center text-sm hover:bg-gray-200 transition-colors">✕</button>
+            </div>
             <div className="px-6 pb-4 space-y-3">
               <div className="bg-gray-50 rounded-xl p-4 space-y-3">
                 <div>
@@ -75,44 +95,42 @@ export default function PaymentModal({ items, total, onClose, onSuccess }: Payme
               </div>
               <p className="text-[11px] text-gray-400 text-center">Esta es una simulación. No se realizará ningún cobro real.</p>
             </div>
-
-            {/* Order summary */}
             <div className="px-6 pb-4 border-t border-gray-100 pt-4 space-y-2">
               {items.map((item) => (
                 <div key={item.product.id} className="flex justify-between text-sm">
-                  <span className="text-gray-600 truncate mr-2">
-                    {item.quantity}x {item.product.name}
-                  </span>
-                  <span className="text-gray-900 font-medium shrink-0">
-                    S/ {(item.product.price * item.quantity).toFixed(2)}
-                  </span>
+                  <span className="text-gray-600 truncate mr-2">{item.quantity}x {item.product.name}</span>
+                  <span className="text-gray-900 font-medium shrink-0">S/ {(item.product.price * item.quantity).toFixed(2)}</span>
                 </div>
               ))}
             </div>
-
-            {/* Total + button */}
             <div className="px-6 pb-6 pt-2 border-t border-gray-100">
               <div className="flex justify-between items-center mb-4">
                 <span className="text-sm font-semibold text-gray-900">Total</span>
                 <span className="text-lg font-bold text-gray-900">S/ {total.toFixed(2)}</span>
               </div>
-
-              <button
-                onClick={handlePay}
-                disabled={state === 'processing'}
-                className="w-full py-3.5 rounded-xl bg-rappi hover:bg-rappi-dark disabled:bg-rappi/40 text-white font-semibold text-sm transition-colors flex items-center justify-center gap-2"
-              >
-                {state === 'processing' ? (
-                  <>
-                    <div className="size-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                    Procesando pago...
-                  </>
-                ) : (
-                  `Pagar S/ ${total.toFixed(2)}`
-                )}
+              <button onClick={handlePay} className="w-full py-3.5 rounded-xl bg-rappi hover:bg-rappi-dark text-white font-semibold text-sm transition-colors">
+                Pagar S/ {total.toFixed(2)}
               </button>
             </div>
           </>
+        )}
+
+        {step === 'processing' && (
+          <div className="px-6 pb-8 pt-8 flex flex-col items-center gap-4">
+            <div className="size-16 border-4 border-gray-200 border-t-rappi rounded-full animate-spin" />
+            <p className="text-gray-500 text-sm">Procesando pago...</p>
+          </div>
+        )}
+
+        {step === 'success' && (
+          <div className="px-6 pb-8 pt-8 flex flex-col items-center gap-4">
+            <div className="size-20 rounded-full bg-green-100 flex items-center justify-center animate-bounce-in">
+              <svg className="size-10 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
+            <p className="text-green-700 font-medium text-sm">Tu pago fue procesado correctamente</p>
+          </div>
         )}
       </div>
     </div>
