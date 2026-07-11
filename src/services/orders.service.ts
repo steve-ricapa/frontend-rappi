@@ -15,13 +15,21 @@ export async function createRappiOrder(payload: {
 }
 
 export async function getOrder(externalOrderId: string) {
-  const r = await fetch(`${STATUS_API}/rappi/orders/${encodeURIComponent(externalOrderId)}`)
+  const r = await fetch(`${STATUS_API}/rappi/orders/${externalOrderId}`)
   const body = await r.json()
-  return body.data || body
+  return body.data || null
 }
 
-export async function getAllOrders() {
-  const r = await fetch(`${STATUS_API}/rappi/orders`)
+export async function confirmReception(externalOrderId: string, tenantId: string) {
+  const { data } = await gcpApi.post(`/rappi/orders/${externalOrderId}/confirm`, { tenantId })
+  return data.data
+}
+
+export async function getAllOrders(email?: string) {
+  const url = email
+    ? `${STATUS_API}/rappi/orders?email=${encodeURIComponent(email)}`
+    : `${STATUS_API}/rappi/orders`
+  const r = await fetch(url)
   const body = await r.json()
   return body.data || []
 }

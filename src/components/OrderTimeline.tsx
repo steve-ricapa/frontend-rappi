@@ -3,6 +3,7 @@ import type { OrderStage } from '../types'
 interface OrderTimelineProps {
   status: string
   stages?: OrderStage[]
+  statusHistory?: { status: string; timestamp: string; source: string }[]
 }
 
 const STEPS = [
@@ -18,8 +19,12 @@ function getStepIndex(status: string): number {
   return STEPS.findIndex((s) => s.key === status)
 }
 
-export default function OrderTimeline({ status, stages }: OrderTimelineProps) {
+export default function OrderTimeline({ status, stages, statusHistory }: OrderTimelineProps) {
   const currentIndex = getStepIndex(status)
+
+  function getEntryForStep(stepKey: string) {
+    return statusHistory?.find((h) => h.status === stepKey) || null
+  }
 
   return (
     <div className="space-y-0">
@@ -27,6 +32,7 @@ export default function OrderTimeline({ status, stages }: OrderTimelineProps) {
         const isCompleted = index < currentIndex
         const isActive = index === currentIndex
         const stage = stages?.[index]
+        const entry = getEntryForStep(step.key)
 
         return (
           <div key={step.key} className="flex gap-4 animate-slide-up" style={{ animationDelay: `${index * 80}ms`, animationFillMode: 'backwards' }}>
@@ -47,6 +53,14 @@ export default function OrderTimeline({ status, stages }: OrderTimelineProps) {
               <p className={`text-sm font-medium ${isActive ? 'text-rappi' : isCompleted ? 'text-rappi-green' : 'text-gray-400'}`}>
                 {step.label}
               </p>
+              {entry && (
+                <div className="mt-1 space-y-0.5">
+                  <p className="text-xs text-gray-400">
+                    {new Date(entry.timestamp).toLocaleString('es-PE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                  <p className="text-[10px] text-gray-300 uppercase">{entry.source}</p>
+                </div>
+              )}
               {stage && (stage.startTime || stage.assignedTo) && (
                 <div className="mt-1 space-y-0.5">
                   {stage.assignedTo && <p className="text-xs text-gray-500">Responsable: {stage.assignedTo}</p>}

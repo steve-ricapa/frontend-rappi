@@ -14,7 +14,7 @@ export default function OrdersPage() {
   const fetchOrders = useCallback(async () => {
     if (!user) return
     try {
-      const data = await getAllOrders()
+      const data = await getAllOrders(user.email)
       setOrders(data || [])
     } catch {
       //

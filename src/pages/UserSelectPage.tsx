@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useUser } from '../context/UserContext'
 
@@ -12,10 +12,11 @@ export default function UserSelectPage() {
   const [msg, setMsg] = useState('')
   const [loading, setLoading] = useState(false)
 
-  if (user) {
-    navigate('/restaurants', { replace: true })
-    return null
-  }
+  useEffect(() => {
+    if (user) navigate('/restaurants', { replace: true })
+  }, [user, navigate])
+
+  if (user) return null
 
   const handleLogin = async () => {
     if (!email || !password) { setMsg('Completa email y contraseña'); return }
